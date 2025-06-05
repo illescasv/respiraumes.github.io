@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>respiraUMES</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #1e3d32;
+      padding: 2rem;
+      margin: 0;
+    }
+
+    .chatbox {
+      background: white;
+      padding: 1rem;
+      border-radius: 10px;
+      max-width: 600px;
+      width: 100%;
+      margin: auto;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+      box-sizing: border-box;
+    }
+
+    h2 img {
+      height: 1.2em;
+      vertical-align: middle;
+      margin-right: 0.5em;
+    }
+
+    .messages {
+      margin-bottom: 1rem;
+      max-height: 400px;
+      overflow-y: auto;
+      scroll-behavior: smooth;
+    }
+
+    .user, .bot {
+      color: white;
+      background-color: #3d6656;
+      padding: 0.5rem;
+      border-radius: 8px;
+      margin: 0.5rem 0;
+      font-size: 0.95rem;
+    }
+
+    .user b, .bot b {
+      display: block;
+      margin-bottom: 0.3rem;
+    }
+
+    form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      min-width: 0;
+      padding: 0.5rem;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+
+    button {
+      padding: 0.5rem 1rem;
+      border: none;
+      background-color: #1e3d32;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    button:hover {
+      background-color: #2a5448;
+    }
+  </style>
+</head>
+<body>
+  <div class="chatbox">
+    <h2>
+      <img src="logo_umes.png" alt="Logo UMES" />
+      respiraUMES
+    </h2>
+    <div class="messages" id="messages">
+      <p class="bot"><b>Bot:</b> ¡Hola! ¿Cómo te sientes hoy?</p>
+    </div>
+    <form id="chatForm">
+      <input type="text" id="userInput" placeholder="Escribe algo..." required />
+      <button type="submit">Enviar</button>
+    </form>
+  </div>
+
+  <script>
+    const apiKey = "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"; // Reemplaza esto con tu clave real
+    const messagesDiv = document.getElementById("messages");
+    const form = document.getElementById("chatForm");
+
+    let conversation = [
+      {
+        role: "system",
+        content: "Eres un asistente empático que actúa como un apoyo emocional para estudiantes con estrés y ansiedad. Haz preguntas para conocer su rutina diaria, hábitos de sueño, alimentación, ejercicio, carga de tareas y proyectos, y cómo manejan la ansiedad. Analiza sus respuestas y ofrece recomendaciones claras, breves y responsables, incluyendo técnicas prácticas como respiración profunda, tapping, organización de tareas y pausas activas. Anima siempre con un tono amable y positivo, y sugiere formas de estructurar mejor el día para manejar la ansiedad. También puedes recomendar el uso del prototipo Zenglow: un cubo LED con pantalla que guía la técnica de respiración 6-7-8 para ayudar a relajarse en momentos de ansiedad o estrés. Menciónalo siempre explícitamente como una alternativa y explica cómo se usa y en qué puede ayudar."
+      }
+    ];
+
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+      const input = document.getElementById("userInput");
+      const userMessage = input.value;
+      messagesDiv.innerHTML += `<p class="user"><b>Tú:</b> ${userMessage}</p>`;
+      input.value = "";
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+      conversation.push({ role: "user", content: userMessage });
+
+      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + apiKey,
+        },
+        body: JSON.stringify({
+          model: "gpt-3.5-turbo",
+          messages: conversation,
+          max_tokens: 500,
+        }),
+      });
+
+      const data = await response.json();
+      const botMessage = data.choices?.[0]?.message?.content || "Lo siento, no pude responder.";
+      conversation.push({ role: "assistant", content: botMessage });
+      messagesDiv.innerHTML += `<p class="bot"><b>Bot:</b> ${botMessage}</p>`;
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    };
+  </script>
+</body>
+</html>
+
